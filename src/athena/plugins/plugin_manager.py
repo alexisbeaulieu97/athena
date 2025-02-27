@@ -39,7 +39,6 @@ class PluginManager:
 
     def _parse_test_configs(self, config: dict[str, Any]) -> TestsConfig:
         """Parse the raw config dict into a structured TestsConfig object."""
-        print(config)
         if "tests" not in config:
             return TestsConfig()
 

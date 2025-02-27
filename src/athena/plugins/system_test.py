@@ -1,17 +1,17 @@
 import platform
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import psutil
 
-from athena.models import TestResult, TestStatus, TestSummary
+from athena.models import TestResult, TestStatus
 from athena.plugins import hookimpl
 
 
 class SystemTestPlugin:
     NAME = "system_test"
     VERSION = "1.0.0"
-    
+
     # Define available tests with their default parameters
     AVAILABLE_TESTS = {
         "system_info": {
@@ -44,7 +44,7 @@ class SystemTestPlugin:
             try:
                 # Get the collect_network parameter with default
                 collect_network = config.get("collect_network", False)
-                
+
                 system_info = {
                     "os": platform.system(),
                     "python_version": platform.python_version(),
@@ -52,7 +52,7 @@ class SystemTestPlugin:
                     "memory_total": psutil.virtual_memory().total,
                     "memory_available": psutil.virtual_memory().available,
                 }
-                
+
                 # Add network info if requested
                 if collect_network:
                     try:
@@ -67,7 +67,7 @@ class SystemTestPlugin:
                         system_info["network"] = network_info
                     except Exception as e:
                         system_info["network_error"] = str(e)
-                
+
                 return TestResult(
                     plugin_name=self.NAME,
                     test_name=name,

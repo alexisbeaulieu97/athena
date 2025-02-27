@@ -25,7 +25,7 @@ def run(
         summary = pm.run_test(config)
 
         # Handle report with specified format
-        pm.handle_report(summary, format=report_format)
+        pm.handle_report(summary)
 
     except Exception as e:
         typer.echo(f"Error: {str(e)}", err=True)

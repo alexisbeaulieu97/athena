@@ -4,7 +4,7 @@ from athena.models import TestResult, TestSummary
 from athena.plugins import hookspec
 
 
-@hookspec
+@hookspec(firstresult=True)
 def athena_import_config(config: str, format: Optional[str] = None) -> Optional[dict[str, Any]]:
     """Hook specification for importing configuration.
 
