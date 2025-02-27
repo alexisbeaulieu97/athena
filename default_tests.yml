@@ -1,0 +1,17 @@
+---
+# Default test configuration
+memory_threshold: 80  # Memory usage threshold percentage
+
+# System test settings
+system_test:
+  enabled: true
+  collect_network: true
+  collect_disk: true
+
+# Test execution settings
+execution:
+  parallel: false
+  timeout: 30  # seconds
+  retry:
+    attempts: 3
+    delay: 5  # seconds
