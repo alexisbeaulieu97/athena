@@ -12,6 +12,18 @@ class TestStatus(str, Enum):
     ERROR = "error"
 
 
+class TestConfig(BaseModel):
+    """Configuration for an individual test."""
+    name: str
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+
+
+class TestsConfig(BaseModel):
+    """Configuration for multiple tests."""
+    tests: List[TestConfig] = Field(default_factory=list)
+    global_parameters: Dict[str, Any] = Field(default_factory=dict)
+
+
 class TestResult(BaseModel):
     plugin_name: str
     test_name: str

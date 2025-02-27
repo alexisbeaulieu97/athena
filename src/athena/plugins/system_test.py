@@ -1,6 +1,6 @@
 import platform
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import psutil
 
@@ -11,6 +11,30 @@ from athena.plugins import hookimpl
 class SystemTestPlugin:
     NAME = "system_test"
     VERSION = "1.0.0"
+    
+    # Define available tests with their default parameters
+    AVAILABLE_TESTS = {
+        "system_info": {
+            "description": "Collects basic system information",
+            "parameters": {
+                "collect_network": {
+                    "type": "boolean",
+                    "description": "Whether to collect network interface information",
+                    "default": False
+                }
+            }
+        },
+        "memory_check": {
+            "description": "Checks if memory usage is below the specified threshold",
+            "parameters": {
+                "memory_threshold": {
+                    "type": "integer",
+                    "description": "Memory usage threshold percentage",
+                    "default": 90
+                }
+            }
+        }
+    }
 
     @hookimpl
     def athena_run_test(self, name: str, config: Dict[str, Any]) -> TestResult:
@@ -18,6 +42,9 @@ class SystemTestPlugin:
 
         if name == "system_info":
             try:
+                # Get the collect_network parameter with default
+                collect_network = config.get("collect_network", False)
+                
                 system_info = {
                     "os": platform.system(),
                     "python_version": platform.python_version(),
@@ -25,6 +52,22 @@ class SystemTestPlugin:
                     "memory_total": psutil.virtual_memory().total,
                     "memory_available": psutil.virtual_memory().available,
                 }
+                
+                # Add network info if requested
+                if collect_network:
+                    try:
+                        # Simple network info collection
+                        network_info = {}
+                        for interface, stats in psutil.net_if_stats().items():
+                            network_info[interface] = {
+                                "up": stats.isup,
+                                "speed": stats.speed,
+                                "mtu": stats.mtu
+                            }
+                        system_info["network"] = network_info
+                    except Exception as e:
+                        system_info["network_error"] = str(e)
+                
                 return TestResult(
                     plugin_name=self.NAME,
                     test_name=name,
@@ -91,5 +134,6 @@ class SystemTestPlugin:
             "name": self.NAME,
             "version": self.VERSION,
             "description": "System information and resource usage tests",
-            "dependencies": ["psutil>=7.0.0"]
+            "dependencies": ["psutil>=7.0.0"],
+            "available_tests": self.AVAILABLE_TESTS
         }

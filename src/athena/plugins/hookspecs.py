@@ -15,7 +15,7 @@ def athena_import_config(config: str, format: Optional[str] = None) -> Optional[
     Returns:
         Parsed configuration as dict if format matches, None otherwise
     """
-    pass
+    ...
 
 @hookspec
 def athena_run_test(name: str, config: Dict[str, Any]) -> TestResult:
@@ -28,7 +28,7 @@ def athena_run_test(name: str, config: Dict[str, Any]) -> TestResult:
     Returns:
         TestResult: Test execution result
     """
-    pass
+    ...
 
 @hookspec
 def athena_export_config(config: dict[str, Any], format: Optional[str] = None) -> Optional[str]:
@@ -41,7 +41,7 @@ def athena_export_config(config: dict[str, Any], format: Optional[str] = None) -
     Returns:
         Formatted configuration as string if format matches, None otherwise
     """
-    pass
+    ...
 
 @hookspec
 def athena_register_test() -> Dict[str, Any]:
@@ -54,7 +54,7 @@ def athena_register_test() -> Dict[str, Any]:
             description: Test plugin description
             dependencies: List of plugin dependencies
     """
-    pass
+    ...
 
 @hookspec
 def athena_handle_report(summary: TestSummary) -> None:
@@ -70,4 +70,4 @@ def athena_handle_report(summary: TestSummary) -> None:
     - Generate HTML report
     - etc.
     """
-    pass
+    ...
