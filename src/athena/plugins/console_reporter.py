@@ -1,12 +1,12 @@
 import typer
 
-from athena.models import TestStatus, TestSummary
+from athena.models import TestStatus, TestSuiteSummary
 from athena.plugins import hookimpl
 
 
 class ConsoleReporter:
     @hookimpl
-    def athena_handle_report(self, summary: TestSummary) -> None:
+    def athena_handle_report(self, summary: TestSuiteSummary) -> None:
         typer.echo("\nTest Summary:")
         typer.echo(f"Timestamp: {summary.timestamp}")
         typer.echo(f"Total execution time: {summary.execution_time:.3f}s")

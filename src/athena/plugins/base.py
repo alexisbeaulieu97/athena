@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Protocol
+from typing import Any, Optional
 
 from athena.plugins import hookimpl
 
 
-class ConfigHandler(Protocol):
+class ConfigHandler(ABC):
     """Base class for config handlers that can import and export."""
 
     format: str
