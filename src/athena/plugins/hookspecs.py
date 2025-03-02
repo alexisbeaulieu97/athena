@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from athena.models import TestConfig, TestMetadata, TestResult, TestSuiteSummary
+from athena.models import TestConfig, TestPlugin, TestResult, TestSuiteSummary
 from athena.plugins import hookspec
 
 
@@ -22,7 +22,7 @@ def parse_raw_data(
 
 
 @hookspec
-def run_test(config: dict[str, Any]) -> TestResult:
+def register_test() -> TestPlugin:
     """Register a test plugin."""
     ...
 

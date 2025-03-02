@@ -2,15 +2,29 @@ from typing import Any
 from athena.models import (
     PluginMetadata,
     TestDetails,
+    TestFailedResult,
+    TestPlugin,
+    TestPassedResult,
     TestResult,
-    TestStatus,
+    TestSkippedResult,
 )
 import psutil
 from athena.plugins import hookimpl
 
 
 @hookimpl
-def run_test(config: dict[str, Any]) -> TestResult:
+def register_test() -> TestPlugin:
+    return TestPlugin(
+        metadata=PluginMetadata(
+            name="system",
+            version="0.1.0",
+            description="A plugin to collect system information",
+        ),
+        test=test,
+    )
+
+
+def test(config: dict[str, Any]) -> TestResult:
     details: dict[str, TestDetails] = {}
     if "cpu" in config:
         details["cpu"] = TestDetails(
@@ -39,35 +53,16 @@ def run_test(config: dict[str, Any]) -> TestResult:
                 > psutil.disk_usage(config["disk"]["path"]).percent
             ),
         )
+
     if not details:
-        return TestResult(
-            test_name="system_info",
-            test_version="0.1.0",
-            status=TestStatus.SKIPPED,
-            plugin_metadata=PluginMetadata(
-                name="system_info",
-                version="0.1.0",
-                description="A plugin to collect system information",
-            ),
-            message="No tests configured",
+        return TestSkippedResult(
+            message="No system checks configured.",
         )
-    return TestResult(
-        test_name="system_info",
-        test_version="0.1.0",
-        status=(
-            TestStatus.SUCCESS
-            if all(result.success for result in details.values())
-            else TestStatus.FAILED
-        ),
-        plugin_metadata=PluginMetadata(
-            name="system_info",
-            version="0.1.0",
-            description="A plugin to collect system information",
-        ),
-        details=details,
-        message=(
-            "Tests executed successfully"
-            if all(result.success for result in details.values())
-            else "Some tests failed"
-        ),
-    )
+    if all(result.success for result in details.values()):
+        return TestPassedResult(
+            details=details,
+        )
+    else:
+        return TestFailedResult(
+            details=details,
+        )

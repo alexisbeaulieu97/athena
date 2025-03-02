@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 import typer
 
-from athena.models import TestConfig, TestResult
+from athena.models import TestConfig, TestResult, TestSuiteSummary
 from athena.plugins.plugin_manager import pm
 
 app = typer.Typer()
@@ -14,12 +14,7 @@ def import_config(config_raw: str, format: str) -> Optional[dict[str, Any]]:
     return pm.hook.parse_raw_data(data=config_raw, format=format)
 
 
-def execute_test(config: TestConfig) -> TestResult:
-    """Execute test based on the configuration."""
-    summary = pm.hook.run_test(config=config.parameters)
-    return summary
-
-
+# In cli.py, update the run function to create a summary and call the report hook
 @app.command()
 def run(
     config_file: Path = typer.Argument(..., help="The path to the config file"),
@@ -36,12 +31,26 @@ def run(
             )
             raise typer.Exit(1)
 
+        # Get global parameters
+        global_params = config.get("parameters", {})
+
         # Execute tests based on the configuration
+        results = []
         for test_config in config.get("tests", []):
-            result = execute_test(TestConfig(**test_config))
+            # Merge global parameters with test-specific ones
+            merged_params = global_params.copy()
+            merged_params.update(test_config.get("parameters", {}))
+            test_config["parameters"] = merged_params
+
+            result = pm.run_test(TestConfig(**test_config))
+            results.append(result)
             typer.echo(result)
 
-        # Handle report generation using the results
+        # Create a test suite summary with the results
+        summary = TestSuiteSummary(results=results)
+
+        # Let plugins handle the report
+        pm.hook.handle_report(summary=summary)
 
     except Exception as e:
         typer.echo(f"Error: {str(e)}", err=True)

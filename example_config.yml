@@ -6,16 +6,16 @@ retry_count: 2 # Number of retries for failed tests
 
 # List of tests to run with their specific parameters
 tests:
-  - name: system_info
+  - name: "system"
     parameters:
       collect_network: true # Enable network information collection
 
-  - name: memory_check
+  - name: "system"
     parameters:
       memory:
         threshold: 10 # Override the default memory threshold (80%)
 
-  - name: disk_check
+  - name: "system"
     parameters:
       disk:
         path: "/tmp"

@@ -13,13 +13,6 @@ class ConfigHandler(BaseModel):
     handler: Callable[[str], dict[str, Any]]
 
 
-class TestStatus(str, Enum):
-    SUCCESS = "success"
-    FAILED = "failed"
-    SKIPPED = "skipped"
-    ERROR = "error"
-
-
 class TestConfig(BaseModel):
     """Configuration for an individual test."""
 
@@ -27,10 +20,36 @@ class TestConfig(BaseModel):
     parameters: Dict[str, Any] = Field(default_factory=dict)
 
 
-class TestMetadata(BaseModel):
+class TestDetails(BaseModel):
+    expected: Any
+    actual: Any
+    success: bool
+
+
+class PluginMetadata(BaseModel):
     name: str
     version: str
     description: str
+
+
+class TestResult(BaseModel):
+    message: Optional[str] = None
+
+
+class TestSkippedResult(TestResult): ...
+
+
+class TestPassedResult(TestResult):
+    details: Optional[Dict[str, TestDetails]] = None
+
+
+class TestFailedResult(TestResult):
+    details: Optional[Dict[str, TestDetails]] = None
+
+
+class TestPlugin(BaseModel):
+    metadata: PluginMetadata
+    test: Callable[[dict[str, Any]], TestResult]
 
 
 class TestSuiteConfig(BaseModel):
@@ -40,34 +59,6 @@ class TestSuiteConfig(BaseModel):
     parameters: Dict[str, Any] = Field(default_factory=dict)
 
 
-class PluginMetadata(BaseModel):
-    name: str
-    version: str
-    description: str
-
-
-class TestDetails(BaseModel):
-    expected: Any
-    actual: Any
-    success: bool
-
-
-class TestResult(BaseModel):
-    test_name: str
-    test_version: str
-    status: TestStatus
-    plugin_metadata: PluginMetadata
-    message: Optional[str] = None
-    details: Optional[Dict[str, TestDetails]] = None
-
-
 class TestSuiteSummary(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
     results: List[TestResult]
-
-    @property
-    def status_counts(self) -> Dict[str, int]:
-        return {
-            status: sum(1 for r in self.results if r.status == status)
-            for status in TestStatus
-        }
