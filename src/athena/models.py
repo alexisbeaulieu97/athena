@@ -46,23 +46,24 @@ class PluginMetadata(BaseModel):
     description: str
 
 
+class TestDetails(BaseModel):
+    expected: Any
+    actual: Any
+    success: bool
+
+
 class TestResult(BaseModel):
     test_name: str
     test_version: str
-    duration: float
     status: TestStatus
     plugin_metadata: PluginMetadata
     message: Optional[str] = None
-    details: Optional[dict[str, Any]] = None
+    details: Optional[Dict[str, TestDetails]] = None
 
 
 class TestSuiteSummary(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
     results: List[TestResult]
-
-    @property
-    def total_execution_time(self) -> float | Literal[0]:
-        return sum(r.duration for r in self.results)
 
     @property
     def status_counts(self) -> Dict[str, int]:

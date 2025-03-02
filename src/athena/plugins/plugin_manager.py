@@ -5,8 +5,7 @@ import pluggy
 
 from athena.models import ConfigHandler
 from athena.plugins import hookspecs
-from athena.plugins.core import json_parser, yaml_parser
-from athena.plugins.system_test import SystemTestPlugin
+from athena.plugins.builtin import BUILTIN_PLUGINS
 
 
 class AthenaPluginManager:
@@ -22,9 +21,8 @@ class AthenaPluginManager:
         return self.pm.hook
 
     def load_core_plugins(self) -> None:
-        """Register essential plugins (e.g., JSON/YAML handlers)."""
-        core_plugins = [SystemTestPlugin(), json_parser, yaml_parser]
-        for plugin in core_plugins:
+        """Register essential plugins from the built-in registry."""
+        for plugin in BUILTIN_PLUGINS:
             self.pm.register(plugin)
 
     def load_entrypoint_plugins(self, entrypoint_name: str) -> None:

@@ -12,8 +12,14 @@ tests:
 
   - name: memory_check
     parameters:
-      memory_threshold: 75 # Override the default memory threshold (90%)
+      memory:
+        threshold: 10 # Override the default memory threshold (80%)
 
+  - name: disk_check
+    parameters:
+      disk:
+        path: "/tmp"
+        threshold: 5 # Override the default disk threshold (90%)
 # You can add more global parameters here
 environment: "production"
 log_level: "info"
