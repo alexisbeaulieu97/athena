@@ -8,8 +8,12 @@ This module provides the core services for Athena, including:
 These services use the Protocol-based interfaces to interact with plugins.
 """
 
+import importlib
 import logging
-from typing import Any, Dict, List, Optional, Type, Union
+import sys
+from typing import Any, Dict, Iterable, List, Optional, Type, Union
+
+import pkg_resources
 
 from athena.interfaces import (
     CompositeParser,
@@ -66,6 +70,115 @@ class PluginService:
         """
         adapter = PluginAdapter(plugin)
         self.register_provider(adapter)
+
+    def load_entrypoint_plugins(self, entrypoint_name: str = "athena.plugins") -> None:
+        """Load plugins from setuptools entrypoints.
+
+        This method discovers and loads plugins that are registered via setuptools
+        entrypoints. It supports two types of entrypoint plugins:
+
+        1. Protocol-based plugins: These plugins return a PluginProviderProtocol
+           instance (or an object that conforms to the protocol)
+        2. Legacy hook-based plugins: These plugins implement the hooks directly
+
+        Args:
+            entrypoint_name: The name of the entrypoint group to load from
+        """
+        self.logger.info(f"Loading plugins from entrypoint: {entrypoint_name}")
+
+        try:
+            # Discover entrypoints
+            for entrypoint in pkg_resources.iter_entry_points(entrypoint_name):
+                try:
+                    self.logger.debug(
+                        f"Loading plugin from entrypoint: {entrypoint.name}"
+                    )
+
+                    # Load the plugin
+                    plugin = entrypoint.load()
+
+                    # If the plugin is a class, instantiate it
+                    if isinstance(plugin, type):
+                        plugin = plugin()
+
+                    # If the plugin is callable (factory function), call it
+                    if callable(plugin) and not isinstance(plugin, type):
+                        plugin = plugin()
+
+                    # Check if the plugin is a provider or needs an adapter
+                    if isinstance(plugin, PluginProviderProtocol):
+                        # Direct provider registration
+                        self.register_provider(plugin)
+                    else:
+                        # Legacy plugin registration via adapter
+                        self.register_plugin(plugin)
+
+                    self.logger.info(f"Loaded plugin: {entrypoint.name}")
+                except Exception as e:
+                    self.logger.error(f"Failed to load plugin {entrypoint.name}: {e}")
+
+        except Exception as e:
+            self.logger.error(
+                f"Error loading plugins from entrypoint {entrypoint_name}: {e}"
+            )
+
+    def load_module_plugins(self, module_paths: Iterable[str]) -> None:
+        """Load plugins from Python modules.
+
+        This method loads plugins from specified Python module paths. It attempts
+        to import each module and register any plugins it finds.
+
+        Args:
+            module_paths: List of module paths to import
+        """
+        for module_path in module_paths:
+            try:
+                self.logger.debug(f"Importing module: {module_path}")
+
+                # Import the module
+                module = importlib.import_module(module_path)
+
+                # Look for plugin provider instantiation
+                if hasattr(module, "create_provider"):
+                    provider = module.create_provider()
+                    self.register_provider(provider)
+                    self.logger.info(f"Registered provider from {module_path}")
+
+                # Look for plugin objects
+                if hasattr(module, "plugins"):
+                    plugins = module.plugins
+                    if not isinstance(plugins, list):
+                        plugins = [plugins]
+
+                    for plugin in plugins:
+                        self.register_plugin(plugin)
+
+                    self.logger.info(
+                        f"Registered {len(plugins)} plugins from {module_path}"
+                    )
+
+                # Look for runners
+                if hasattr(module, "get_runners"):
+                    runners = module.get_runners()
+
+                    # Create a provider for these runners
+                    class ModuleRunnerProvider:
+                        def get_parsers(self):
+                            return []
+
+                        def get_runners(self):
+                            return runners
+
+                        def get_reporters(self):
+                            return []
+
+                    self.register_provider(ModuleRunnerProvider())
+                    self.logger.info(
+                        f"Registered {len(runners)} runners from {module_path}"
+                    )
+
+            except Exception as e:
+                self.logger.error(f"Failed to load module {module_path}: {e}")
 
     def get_parser(self) -> ConfigParserProtocol:
         """Get a composite parser that tries all registered parsers.

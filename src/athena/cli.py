@@ -56,6 +56,9 @@ def setup_plugins() -> None:
     # Register custom runners
     custom_runners = get_runners()
     plugin_service.register_provider(DirectRunnerProvider(custom_runners))
+    
+    # Load plugins from setuptools entrypoints
+    plugin_service.load_entrypoint_plugins("athena.plugins")
 
     # For backwards compatibility, also register plugins from the legacy manager
     for name, test_plugin in legacy_pm.tests.items():
