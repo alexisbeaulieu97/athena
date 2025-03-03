@@ -21,14 +21,20 @@ from athena.models.reporter_config import ReporterConfig
 
 
 class AthenaPluginManager:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        entrypoint_name: str,
+        load_plugins: bool = True,
+    ) -> None:
         self.parsers: dict[str, DataParserPlugin] = {}
         self.tests: dict[str, TestPlugin] = {}
         self.reporters: dict[str, ReporterPlugin] = {}
         self.logger = logging.getLogger(__name__)
         self.pm = pluggy.PluginManager("athena")
         self.pm.add_hookspecs(hookspecs)
-        self.load_all_plugins()
+
+        if load_plugins:
+            self.load_all_plugins(entrypoint_name)
 
     @property
     def hook(self) -> pluggy.HookRelay:
@@ -45,6 +51,11 @@ class AthenaPluginManager:
             self.logger.debug(f"Registering built-in plugin: {plugin.__name__}")
             self.pm.register(plugin)
 
+    def register_plugin(self, plugin: Any) -> None:
+        """Manually register a plugin."""
+        self.logger.debug(f"Manually registering plugin: {plugin.__name__}")
+        self.pm.register(plugin)
+
     def load_entrypoint_plugins(self, entrypoint_name: str) -> None:
         """Load plugins from setuptools entrypoints."""
         try:
@@ -53,11 +64,11 @@ class AthenaPluginManager:
         except Exception as e:
             self.logger.error(f"Failed to load entrypoint plugins: {e}")
 
-    def load_all_plugins(self) -> None:
+    def load_all_plugins(self, entrypoint_name: str) -> None:
         """Load all plugins."""
         self.logger.info("Loading all plugins")
         self.load_builtin_plugins()
-        self.load_entrypoint_plugins("athena.plugins")
+        self.load_entrypoint_plugins(entrypoint_name)
         self.load_test_runner_plugins()
         self.load_data_parser_plugins()
         self.load_reporter_plugins()
@@ -113,6 +124,3 @@ class AthenaPluginManager:
             self.logger.warning("No reporter plugins registered.")
             return
         self.reporters[reporter_config.name].reporter.report(summary)
-
-
-pm = AthenaPluginManager()
