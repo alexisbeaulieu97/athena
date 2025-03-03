@@ -8,7 +8,7 @@ from athena.models.test_result import TestResult
 from athena.protocols.plugin_manager_protocol import PluginManagerProtocol
 
 
-class TestExecutor:
+class TestManager:
     """Component responsible for executing tests."""
 
     def __init__(
@@ -36,7 +36,5 @@ class TestExecutor:
 
             result = self.plugin_manager.run_test(test_config_copy)
             results.append(result)
-            # TODO move this to main CLI
-            typer.echo(result)
 
         return results

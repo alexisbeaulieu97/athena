@@ -6,7 +6,7 @@ import typer
 
 from athena.managers.configuration_manager import ConfigurationManager
 from athena.managers.report_manager import ReportManager
-from athena.managers.test_manager import TestExecutor
+from athena.managers.test_manager import TestManager
 from athena.plugins.plugin_manager import AthenaPluginManager
 from athena.protocols.plugin_manager_protocol import PluginManagerProtocol
 
@@ -21,13 +21,13 @@ class Athena:
         self,
         plugin_manager: PluginManagerProtocol,
         config_manager: Optional[ConfigurationManager] = None,
-        test_executor: Optional[TestExecutor] = None,
+        test_executor: Optional[TestManager] = None,
         report_manager: Optional[ReportManager] = None,
     ) -> None:
         """Initialize with component managers for clear separation of responsibilities."""
         self.plugin_manager = plugin_manager
         self.config_manager = config_manager or ConfigurationManager(plugin_manager)
-        self.test_executor = test_executor or TestExecutor(
+        self.test_executor = test_executor or TestManager(
             plugin_manager, self.config_manager
         )
         self.report_manager = report_manager or ReportManager(plugin_manager)
@@ -37,6 +37,10 @@ class Athena:
         # Parse configuration
         config = self.config_manager.parse_config(config_file)
         if not config:
+            typer.echo(
+                f"Failed to parse configuration using format: {config_file.suffix.lstrip(".")}",
+                err=True,
+            )
             raise typer.Exit(1)
 
         # Run tests
@@ -58,7 +62,7 @@ def create_plugin_manager(
 def create_athena(
     plugin_manager: Optional[PluginManagerProtocol] = None,
     config_manager: Optional[ConfigurationManager] = None,
-    test_executor: Optional[TestExecutor] = None,
+    test_executor: Optional[TestManager] = None,
     report_manager: Optional[ReportManager] = None,
 ) -> Athena:
     """Factory function to create an Athena instance with its dependencies."""

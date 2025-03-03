@@ -19,11 +19,6 @@ class ConfigurationManager:
         config_obj = self.plugin_manager.parse_data(config_raw, format=format_ext)
 
         if not config_obj:
-            # TODO Move this to main CLI
-            typer.echo(
-                f"Failed to parse configuration using format: {format_ext}",
-                err=True,
-            )
             return None
 
         return AthenaTestSuiteConfig(**config_obj)
