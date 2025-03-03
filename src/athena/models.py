@@ -1,6 +1,17 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Union
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Protocol,
+    Union,
+    runtime_checkable,
+)
 
 from pydantic import BaseModel, Field
 
@@ -61,8 +72,28 @@ class TestSuiteConfig(BaseModel):
 
     tests: List[TestConfig] = Field(default_factory=list)
     parameters: Dict[str, Any] = Field(default_factory=dict)
+    execution_strategy: Optional[str] = Field(default="sequential")
 
 
 class TestSuiteSummary(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
     results: List[TestResult]
+
+
+@runtime_checkable
+class ExecutionStrategy(Protocol):
+    """Protocol for test execution strategies."""
+
+    def execute(
+        self, tests: List[TestConfig], test_runner: Callable[[TestConfig], TestResult]
+    ) -> List[TestResult]:
+        """Execute the tests based on the defined strategy.
+
+        Args:
+            tests: List of test configurations to execute
+            test_runner: Function to run individual tests
+
+        Returns:
+            List of test results
+        """
+        ...

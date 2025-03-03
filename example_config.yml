@@ -1,8 +1,15 @@
 # Athena test configuration example
 
 # Global parameters (applied to all tests unless overridden)
-timeout: 30 # Default timeout in seconds for all tests
-retry_count: 2 # Number of retries for failed tests
+parameters:
+  timeout: 30 # Default timeout in seconds for all tests
+  retry_count: 2 # Number of retries for failed tests
+  environment: "production"
+  log_level: "info"
+
+# Test execution strategy
+execution_strategy: "parallel" # Options: sequential, parallel
+# max_workers: 4  # Optional: number of workers for parallel execution
 
 # List of tests to run with their specific parameters
 tests:
@@ -20,6 +27,3 @@ tests:
       disk:
         path: "/tmp"
         threshold: 5 # Override the default disk threshold (90%)
-# You can add more global parameters here
-environment: "production"
-log_level: "info"

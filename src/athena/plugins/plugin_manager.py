@@ -1,17 +1,20 @@
 import logging
-from typing import Any, List
+from typing import Any, Dict, List, Optional
 
 import pluggy
 
 from athena.models import (
     ConfigHandler,
+    ExecutionStrategy,
     TestConfig,
     TestPlugin,
     TestResult,
     TestSkippedResult,
+    TestSuiteConfig,
 )
 from athena.plugins import hookspecs
 from athena.plugins.builtin import BUILTIN_PLUGINS
+from athena.strategies import get_strategy
 
 
 class AthenaPluginManager:
@@ -65,6 +68,52 @@ class AthenaPluginManager:
                 message="Test not found",
             )
         return self.tests[test.name].test(test.parameters)
+
+    def run_test_suite(
+        self,
+        test_suite: TestSuiteConfig,
+        strategy_name: Optional[str] = None,
+        strategy_options: Optional[Dict[str, Any]] = None,
+    ) -> List[TestResult]:
+        """Run a suite of tests using the specified execution strategy.
+
+        Args:
+            test_suite: The test suite configuration
+            strategy_name: Name of the execution strategy to use (defaults to one in config or "sequential")
+            strategy_options: Additional options for the strategy
+
+        Returns:
+            List of test results
+        """
+        # Use the provided strategy name, or fall back to the one in config, or default to sequential
+        strategy_name = strategy_name or test_suite.execution_strategy or "sequential"
+        strategy_options = strategy_options or {}
+
+        # Get the specified strategy
+        try:
+            strategy = get_strategy(strategy_name, **strategy_options)
+        except ValueError as e:
+            self.logger.warning(
+                f"Invalid execution strategy '{strategy_name}', falling back to sequential: {e}"
+            )
+            strategy = get_strategy("sequential")
+
+        self.logger.info(f"Running test suite using {strategy_name} strategy")
+
+        # Create a test runner function that handles parameter merging
+        def run_test_with_params(test_config: TestConfig) -> TestResult:
+            # Merge global parameters with test-specific ones
+            merged_params = test_suite.parameters.copy()
+            merged_params.update(test_config.parameters)
+
+            # Create a new TestConfig with the merged parameters
+            merged_config = TestConfig(name=test_config.name, parameters=merged_params)
+
+            # Run the test
+            return self.run_test(merged_config)
+
+        # Execute the tests using the selected strategy
+        return strategy.execute(test_suite.tests, run_test_with_params)
 
 
 pm = AthenaPluginManager()
