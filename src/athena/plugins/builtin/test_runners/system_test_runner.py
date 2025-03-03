@@ -5,9 +5,6 @@ from athena.models.test_result import TestResult
 from athena.models.test_details import TestDetails
 import psutil
 from athena.plugins import hookimpl
-from athena.models.test_passed_result import TestPassedResult
-from athena.models.test_failed_result import TestFailedResult
-from athena.models.test_skipped_result import TestSkippedResult
 
 
 @hookimpl(tryfirst=True)
@@ -53,14 +50,14 @@ class SystemTestRunner:
             )
 
         if not details:
-            return TestSkippedResult(
+            return TestResult.skipped(
                 message="No system checks configured.",
             )
         if all(result.success for result in details.values()):
-            return TestPassedResult(
+            return TestResult.passed(
                 details=details,
             )
         else:
-            return TestFailedResult(
+            return TestResult.failed(
                 details=details,
             )

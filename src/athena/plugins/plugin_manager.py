@@ -16,7 +16,6 @@ from athena.models.data_parser_plugin import DataParserPlugin
 from athena.models.test_config import TestConfig
 from athena.models.test_plugin import TestPlugin
 from athena.models.test_result import TestResult
-from athena.models.test_skipped_result import TestSkippedResult
 from athena.models.reporter_config import ReporterConfig
 
 
@@ -83,7 +82,7 @@ class AthenaPluginManager:
         """Run a test based on the configuration."""
         if test.name not in self.tests:
             self.logger.warning(f"Test '{test.name}' not found.")
-            return TestSkippedResult(
+            return TestResult.skipped(
                 message="Test not found",
             )
         return self.tests[test.name].runner.run(
