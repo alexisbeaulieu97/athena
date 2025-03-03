@@ -1,7 +1,7 @@
 from heapq import merge
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 import typer
 from typing_extensions import Annotated
@@ -10,17 +10,17 @@ from athena.models.athena_test_suite_config import AthenaTestSuiteConfig
 from athena.plugins.plugin_manager import AthenaPluginManager
 from athena.models.test_config import TestConfig
 from athena.models.test_suite_summary import TestSuiteSummary
+from athena.models.test_result import TestResult
 
 app = typer.Typer()
 logging.basicConfig(level=logging.DEBUG)
 
 
-class Athena:
-    """Main application class that handles test execution."""
+class ConfigurationManager:
+    """Component responsible for configuration parsing and parameter management."""
 
     def __init__(self, plugin_manager: AthenaPluginManager) -> None:
-        """Initialize with an optional plugin manager for dependency injection."""
-        self.plugin_manager = plugin_manager or default_plugin_manager
+        self.plugin_manager = plugin_manager
 
     def parse_config(self, config_file: Path) -> Optional[AthenaTestSuiteConfig]:
         """Parse a configuration file using the appropriate plugin."""
@@ -50,13 +50,21 @@ class Athena:
 
         return merged_params
 
-    def run_tests(self, config: AthenaTestSuiteConfig) -> list:
+
+class TestExecutor:
+    """Component responsible for executing tests."""
+
+    def __init__(self, plugin_manager: AthenaPluginManager, config_manager: ConfigurationManager) -> None:
+        self.plugin_manager = plugin_manager
+        self.config_manager = config_manager
+
+    def run_tests(self, config: AthenaTestSuiteConfig) -> List[TestResult]:
         """Execute tests based on the configuration."""
         results = []
 
         for test_config in config.tests:
             # Merge global parameters with test-specific ones
-            merged_params = self.merge_parameters(
+            merged_params = self.config_manager.merge_parameters(
                 config.parameters or {}, test_config.parameters or {}
             )
 
@@ -71,11 +79,42 @@ class Athena:
 
         return results
 
-    def generate_reports(self, config: AthenaTestSuiteConfig, results: list) -> None:
+
+class ReportManager:
+    """Component responsible for generating reports."""
+
+    def __init__(self, plugin_manager: AthenaPluginManager) -> None:
+        self.plugin_manager = plugin_manager
+
+    def generate_reports(self, config: AthenaTestSuiteConfig, results: List[TestResult]) -> None:
         """Generate reports using the configured reporters."""
         summary = TestSuiteSummary(results=results)
         for report in config.reports:
             self.plugin_manager.report(report, summary)
+
+
+class Athena:
+    """Main application class that orchestrates the test execution process."""
+
+    def __init__(self, plugin_manager: AthenaPluginManager) -> None:
+        """Initialize with component managers for clear separation of responsibilities."""
+        self.plugin_manager = plugin_manager
+        self.config_manager = ConfigurationManager(plugin_manager)
+        self.test_executor = TestExecutor(plugin_manager, self.config_manager)
+        self.report_manager = ReportManager(plugin_manager)
+
+    def run_test_suite(self, config_file: Path) -> None:
+        """Execute the entire test suite process."""
+        # Parse configuration
+        config = self.config_manager.parse_config(config_file)
+        if not config:
+            raise typer.Exit(1)
+
+        # Run tests
+        results = self.test_executor.run_tests(config)
+
+        # Generate reports
+        self.report_manager.generate_reports(config, results)
 
 
 @app.command()
@@ -85,18 +124,7 @@ def run(
     """Run tests based on the provided configuration file."""
     try:
         athena = Athena(AthenaPluginManager(entrypoint_name="athena.plugins"))
-
-        # Parse configuration
-        config = athena.parse_config(config_file)
-        if not config:
-            raise typer.Exit(1)
-
-        # Run tests
-        results = athena.run_tests(config)
-
-        # Generate reports
-        athena.generate_reports(config, results)
-
+        athena.run_test_suite(config_file)
     except Exception as e:
         typer.echo(f"Error: {str(e)}", err=True)
         raise typer.Exit(1)
