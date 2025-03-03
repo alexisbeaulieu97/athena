@@ -1,44 +1,22 @@
-from typing import Any, Optional
-
-from athena.models import TestConfig, TestPlugin, TestResult, TestSuiteSummary
 from athena.plugins import hookspec
+from athena.models.data_parser_plugin import DataParserPlugin
+from athena.models.reporter_plugin import ReporterPlugin
+from athena.models.test_plugin import TestPlugin
 
 
-@hookspec(firstresult=True)
-def parse_raw_data(
-    data: Any,
-    format: Optional[str] = None,
-) -> Optional[dict[str, Any]]:
-    """Parse raw data.
-
-    Args:
-        data: Raw data to parse
-        format: Optional format specifier ('json', 'yaml', etc.)
-
-    Returns:
-        Parsed data as dict if format matches, None otherwise
-    """
+@hookspec
+def register_data_parser_plugin() -> DataParserPlugin:
+    """Register a raw data parser."""
     ...
 
 
 @hookspec
-def register_test() -> TestPlugin:
-    """Register a test plugin."""
+def register_test_plugin() -> TestPlugin:
+    """Register a test runner."""
     ...
 
 
 @hookspec
-def handle_report(summary: TestSuiteSummary) -> None:
-    """Handle test execution report.
-
-    Args:
-        summary: Test execution summary containing results and statistics
-
-    This hook can be used to:
-    - Print to stdout
-    - Save to file
-    - Send to external API
-    - Generate HTML report
-    - etc.
-    """
+def register_reporter_plugin() -> ReporterPlugin:
+    """Register a test result reporter."""
     ...
