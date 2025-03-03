@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Optional
 
-import typer
 from athena.models.athena_test_suite_config import AthenaTestSuiteConfig
 from athena.protocols.plugin_manager_protocol import PluginManagerProtocol
 
