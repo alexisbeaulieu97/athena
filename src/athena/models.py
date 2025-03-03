@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Literal, Optional
+from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -32,18 +32,22 @@ class PluginMetadata(BaseModel):
     description: str
 
 
-class TestResult(BaseModel):
+type TestResult = Annotated[
+    Union["TestSkippedResult", "TestPassedResult", "TestFailedResult"], "TestResult"
+]
+
+
+class TestSkippedResult(BaseModel):
     message: Optional[str] = None
 
 
-class TestSkippedResult(TestResult): ...
-
-
-class TestPassedResult(TestResult):
+class TestPassedResult(BaseModel):
+    message: Optional[str] = None
     details: Optional[Dict[str, TestDetails]] = None
 
 
-class TestFailedResult(TestResult):
+class TestFailedResult(BaseModel):
+    message: Optional[str] = None
     details: Optional[Dict[str, TestDetails]] = None
 
 
