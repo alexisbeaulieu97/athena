@@ -9,16 +9,19 @@ parameters:
 
 # List of tests to run with their specific parameters
 tests:
-  - name: "system"
+  - name: "Network collection test"
+    runner: "system"
     parameters:
       collect_network: true # Enable network information collection
 
-  - name: "system"
+  - name: "Memory test"
+    runner: "system"
     parameters:
       memory:
         threshold: 10 # Override the default memory threshold (80%)
 
-  - name: "system"
+  - name: "Disk test"
+    runner: "system"
     parameters:
       disk:
         path: "/tmp"

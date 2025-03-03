@@ -4,19 +4,22 @@ from athena.models.reporter_plugin import ReporterPlugin
 from athena.models.test_plugin import TestPlugin
 
 
-@hookspec
-def register_data_parser_plugin() -> DataParserPlugin:
-    """Register a raw data parser."""
-    ...
+class DataParserHooks:
+    @hookspec
+    def register_data_parser_plugin() -> DataParserPlugin:
+        """Register a raw data parser."""
+        ...
 
 
-@hookspec
-def register_test_plugin() -> TestPlugin:
-    """Register a test runner."""
-    ...
+class TestRunnerHooks:
+    @hookspec
+    def register_test_plugin() -> TestPlugin:
+        """Register a test runner."""
+        ...
 
 
-@hookspec
-def register_reporter_plugin() -> ReporterPlugin:
-    """Register a test result reporter."""
-    ...
+class ReporterHooks:
+    @hookspec
+    def register_reporter_plugin() -> ReporterPlugin:
+        """Register a test result reporter."""
+        ...

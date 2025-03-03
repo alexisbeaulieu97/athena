@@ -1,90 +1,57 @@
 import logging
 from pathlib import Path
-from typing import Optional
-
 import typer
-
-from athena.managers.configuration_manager import ConfigurationManager
-from athena.managers.report_manager import ReportManager
-from athena.managers.test_manager import TestManager
-from athena.plugins.plugin_manager import AthenaPluginManager
-from athena.protocols.plugin_manager_protocol import PluginManagerProtocol
+from athena.plugins.report_plugins_manager import ReportPluginsManager
+from athena.plugins.test_plugins_manager import TestPluginsManager
+from athena.plugins.data_parser_plugins_manager import DataParserPluginsManager
+from athena.services.configuration_service import ConfigurationService
+from athena.services.test_suite_service import TestSuiteService
 
 app = typer.Typer()
-logging.basicConfig(level=logging.DEBUG)
-
-
-class Athena:
-    """Main application class that orchestrates the test execution process."""
-
-    def __init__(
-        self,
-        plugin_manager: PluginManagerProtocol,
-        config_manager: Optional[ConfigurationManager] = None,
-        test_executor: Optional[TestManager] = None,
-        report_manager: Optional[ReportManager] = None,
-    ) -> None:
-        """Initialize with component managers for clear separation of responsibilities."""
-        self.plugin_manager = plugin_manager
-        self.config_manager = config_manager or ConfigurationManager(plugin_manager)
-        self.test_executor = test_executor or TestManager(
-            plugin_manager, self.config_manager
-        )
-        self.report_manager = report_manager or ReportManager(plugin_manager)
-
-    def run_test_suite(self, config_file: Path) -> None:
-        """Execute the entire test suite process."""
-        # Parse configuration
-        config = self.config_manager.parse_config(config_file)
-        if not config:
-            typer.echo(
-                f"Failed to parse configuration using format: {config_file.suffix.lstrip(".")}",
-                err=True,
-            )
-            raise typer.Exit(1)
-
-        # Run tests
-        results = self.test_executor.run_tests(config)
-
-        # Generate reports
-        self.report_manager.generate_reports(config, results)
-
-
-# Create a module-level factory function for dependency injection
-def create_plugin_manager(
-    entrypoint_name: str = "athena.plugins",
-) -> PluginManagerProtocol:
-    """Factory function to create a plugin manager instance."""
-    return AthenaPluginManager(entrypoint_name=entrypoint_name)
-
-
-# Create a module-level factory function for creating Athena instances
-def create_athena(
-    plugin_manager: Optional[PluginManagerProtocol] = None,
-    config_manager: Optional[ConfigurationManager] = None,
-    test_executor: Optional[TestManager] = None,
-    report_manager: Optional[ReportManager] = None,
-) -> Athena:
-    """Factory function to create an Athena instance with its dependencies."""
-    plugin_manager = plugin_manager or create_plugin_manager()
-    return Athena(
-        plugin_manager=plugin_manager,
-        config_manager=config_manager,
-        test_executor=test_executor,
-        report_manager=report_manager,
-    )
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @app.command()
 def run(
     config_file: Path = typer.Argument(..., help="The path to the config file"),
+    verbose: bool = typer.Option(
+        False, "-v", "--verbose", help="Enable verbose logging"
+    ),
 ) -> None:
     """Run tests based on the provided configuration file."""
+
+    # Set logging level based on verbosity
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
     try:
-        # Use the factory method instead of direct instantiation
-        athena = create_athena()
-        athena.run_test_suite(config_file)
+        data_parser_plugins_manager = DataParserPluginsManager("athena")
+        test_plugins_manager = TestPluginsManager("athena")
+        report_plugins_manager = ReportPluginsManager("athena")
+        test_service = TestSuiteService(
+            data_parser_plugins_manager,
+            test_plugins_manager,
+            report_plugins_manager,
+        )
+        summary = test_service.run_tests_from_config(config_file)
+
+        # Show summary
+        passed = sum(1 for r in summary.results if r.status == "passed")
+        failed = sum(1 for r in summary.results if r.status == "failed")
+        skipped = sum(1 for r in summary.results if r.status == "skipped")
+
+        typer.echo(f"\nTest Summary:")
+        typer.echo(f"  Total: {len(summary.results)}")
+        typer.secho(
+            f"  Passed: {passed}", fg=typer.colors.GREEN if passed > 0 else None
+        )
+        typer.secho(f"  Failed: {failed}", fg=typer.colors.RED if failed > 0 else None)
+        typer.secho(
+            f"  Skipped: {skipped}", fg=typer.colors.YELLOW if skipped > 0 else None
+        )
     except Exception as e:
+        logger.exception("Error running tests")
         typer.echo(f"Error: {str(e)}", err=True)
         raise typer.Exit(1)
 
