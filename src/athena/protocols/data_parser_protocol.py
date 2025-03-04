@@ -1,4 +1,5 @@
 from typing import Any, Optional
+
 from typing_extensions import Protocol, runtime_checkable
 
 

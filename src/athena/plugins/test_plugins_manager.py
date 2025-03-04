@@ -1,14 +1,14 @@
 import logging
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import pluggy
 
+from athena.models.test_config import TestConfig
+from athena.models.test_plugin import TestPlugin
+from athena.models.test_result import TestResult
 from athena.plugins.builtin import BUILTIN_TEST_RUNNER_PLUGINS
 from athena.plugins.hookspecs import TestRunnerHooks
 from athena.protocols.test_runner_protocol import TestRunnerProtocol
-from athena.models.test_plugin import TestPlugin
-from athena.models.test_config import TestConfig
-from athena.models.test_result import TestResult
 
 
 class TestPluginsManager:

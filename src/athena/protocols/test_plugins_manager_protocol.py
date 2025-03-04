@@ -1,5 +1,4 @@
-from typing import runtime_checkable
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from athena.models.test_config import TestConfig
 from athena.models.test_result import TestResult

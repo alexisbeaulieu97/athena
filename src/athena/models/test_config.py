@@ -1,6 +1,8 @@
 from typing import Any, Dict
-from athena.models import BaseModel
+
 from pydantic import Field
+
+from athena.models import BaseModel
 
 
 class TestConfig(BaseModel):

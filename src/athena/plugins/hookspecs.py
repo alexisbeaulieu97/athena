@@ -1,7 +1,7 @@
-from athena.plugins import hookspec
 from athena.models.data_parser_plugin import DataParserPlugin
 from athena.models.reporter_plugin import ReporterPlugin
 from athena.models.test_plugin import TestPlugin
+from athena.plugins import hookspec
 
 
 class DataParserHooks:

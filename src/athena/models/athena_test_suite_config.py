@@ -1,4 +1,5 @@
 from typing import Any, Optional
+
 from athena.models import BaseModel
 from athena.models.reporter_config import ReporterConfig
 from athena.models.test_config import TestConfig

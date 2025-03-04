@@ -1,10 +1,10 @@
 from typing import List
 
-from athena.services.configuration_service import ConfigurationService
 from athena.models.athena_test_suite_config import AthenaTestSuiteConfig
 from athena.models.test_config import TestConfig
 from athena.models.test_result import TestResult
 from athena.protocols.test_plugins_manager_protocol import TestPluginsManagerProtocol
+from athena.services.configuration_service import ConfigurationService
 
 
 class TestService:

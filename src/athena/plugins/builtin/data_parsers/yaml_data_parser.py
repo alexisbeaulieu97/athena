@@ -1,8 +1,10 @@
 from typing import Any
+
+import yaml
+
 from athena.models.data_parser_plugin import DataParserPlugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.plugins import hookimpl
-import yaml
 
 
 @hookimpl(tryfirst=True)

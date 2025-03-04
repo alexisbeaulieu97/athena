@@ -1,8 +1,9 @@
+import json
 from typing import Any
+
 from athena.models.data_parser_plugin import DataParserPlugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.plugins import hookimpl
-import json
 
 
 @hookimpl(tryfirst=True)

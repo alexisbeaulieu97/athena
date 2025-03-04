@@ -1,9 +1,11 @@
 import logging
 from pathlib import Path
+
 import typer
+
+from athena.plugins.data_parser_plugins_manager import DataParserPluginsManager
 from athena.plugins.report_plugins_manager import ReportPluginsManager
 from athena.plugins.test_plugins_manager import TestPluginsManager
-from athena.plugins.data_parser_plugins_manager import DataParserPluginsManager
 from athena.services.configuration_service import ConfigurationService
 from athena.services.test_suite_service import TestSuiteService
 

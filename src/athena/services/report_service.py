@@ -1,4 +1,5 @@
 from typing import List
+
 from athena.models.athena_test_suite_config import AthenaTestSuiteConfig
 from athena.models.test_result import TestResult
 from athena.models.test_suite_summary import TestSuiteSummary

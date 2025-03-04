@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from athena.models.test_suite_summary import TestSuiteSummary
 from athena.protocols.data_parser_plugins_manager_protocol import (
     DataParserPluginsManagerProtocol,
 )
@@ -9,7 +11,6 @@ from athena.protocols.test_plugins_manager_protocol import TestPluginsManagerPro
 from athena.services.configuration_service import ConfigurationService
 from athena.services.report_service import ReportService
 from athena.services.test_service import TestService
-from athena.models.test_suite_summary import TestSuiteSummary
 
 
 class TestSuiteService:

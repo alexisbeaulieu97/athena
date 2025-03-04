@@ -1,5 +1,4 @@
-from typing import Any, Optional, runtime_checkable
-from typing import Protocol
+from typing import Any, Optional, Protocol, runtime_checkable
 
 
 @runtime_checkable

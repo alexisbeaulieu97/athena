@@ -3,8 +3,8 @@ from typing import Dict, List
 
 import pluggy
 
-from athena.models.reporter_plugin import ReporterPlugin
 from athena.models.reporter_config import ReporterConfig
+from athena.models.reporter_plugin import ReporterPlugin
 from athena.models.test_suite_summary import TestSuiteSummary
 from athena.plugins.builtin import BUILTIN_REPORTER_PLUGINS
 from athena.plugins.hookspecs import ReporterHooks

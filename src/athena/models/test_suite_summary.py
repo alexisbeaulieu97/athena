@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import List
+
+from pydantic import Field
+
 from athena.models import BaseModel
 from athena.models.test_result import TestResult
-from pydantic import Field
 
 
 class TestSuiteSummary(BaseModel):

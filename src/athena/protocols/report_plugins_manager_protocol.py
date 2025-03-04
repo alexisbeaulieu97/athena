@@ -1,5 +1,4 @@
-from typing import Any, runtime_checkable
-from typing import Protocol
+from typing import Any, Protocol, runtime_checkable
 
 from athena.models.test_suite_summary import TestSuiteSummary
 
