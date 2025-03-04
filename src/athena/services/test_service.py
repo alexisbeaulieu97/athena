@@ -2,7 +2,7 @@ from typing import List
 
 from athena.models.athena_test_suite_config import AthenaTestSuiteConfig
 from athena.models.test_config import TestConfig
-from athena.models.test_result import TestResult
+from athena.models.test_result_summary import TestResultSummary
 from athena.protocols.test_plugins_manager_protocol import TestPluginsManagerProtocol
 from athena.services.configuration_service import ConfigurationService
 
@@ -18,7 +18,7 @@ class TestService:
         self.plugin_manager = plugin_manager
         self.config_manager = config_manager
 
-    def run_tests(self, config: AthenaTestSuiteConfig) -> List[TestResult]:
+    def run_tests(self, config: AthenaTestSuiteConfig) -> List[TestResultSummary]:
         """Execute tests based on the configuration."""
         results = []
 
@@ -35,7 +35,8 @@ class TestService:
                 parameters=merged_params,
             )
 
-            result = self.plugin_manager.run_test(test_config_copy)
-            results.append(result)
+            test_result = self.plugin_manager.run_test(test_config_copy)
+            result_summary = TestResultSummary(test_config=test_config_copy, test_result=test_result)
+            results.append(result_summary)
 
         return results
