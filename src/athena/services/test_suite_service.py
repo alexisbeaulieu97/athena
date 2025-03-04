@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from athena.models.test_suite_summary import TestSuiteSummary
+from athena.models.test_result_summary import TestResultSummary
 from athena.protocols.data_parser_plugins_manager_protocol import (
     DataParserPluginsManagerProtocol,
 )
@@ -46,7 +47,12 @@ class TestSuiteService:
         test_manager = TestService(self.test_plugins_manager, self.config_manager)
         results = test_manager.run_tests(config)
 
-        report_manager = ReportService(self.report_plugins_manager)
-        report_manager.generate_reports(config, results)
+        test_result_summaries = [
+            TestResultSummary(test_config=result.test_config, test_result=result.test_result)
+            for result in results
+        ]
 
-        return TestSuiteSummary(results=results)
+        report_manager = ReportService(self.report_plugins_manager)
+        report_manager.generate_reports(config, test_result_summaries)
+
+        return TestSuiteSummary(results=test_result_summaries)
