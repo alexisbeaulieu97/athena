@@ -6,7 +6,6 @@ import typer
 from athena.plugins.data_parser_plugins_manager import DataParserPluginsManager
 from athena.plugins.report_plugins_manager import ReportPluginsManager
 from athena.plugins.test_plugins_manager import TestPluginsManager
-from athena.services.configuration_service import ConfigurationService
 from athena.services.test_suite_service import TestSuiteService
 
 app = typer.Typer()
@@ -43,7 +42,7 @@ def run(
         failed = sum(1 for r in summary.results if r.status == "failed")
         skipped = sum(1 for r in summary.results if r.status == "skipped")
 
-        typer.echo(f"\nTest Summary:")
+        typer.echo("\nTest Summary:")
         typer.echo(f"  Total: {len(summary.results)}")
         typer.secho(
             f"  Passed: {passed}", fg=typer.colors.GREEN if passed > 0 else None

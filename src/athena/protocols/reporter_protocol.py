@@ -1,5 +1,3 @@
-from typing import Any
-
 from typing_extensions import Protocol, runtime_checkable
 
 from athena.models.test_suite_summary import TestSuiteSummary
