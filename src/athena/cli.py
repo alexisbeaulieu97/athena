@@ -13,14 +13,16 @@ from athena.plugins.builtin import (
     BUILTIN_TEST_RUNNER_PLUGINS,
 )
 from athena.plugins.hookspecs import DataParserHooks, ReporterHooks, TestRunnerHooks
-from athena.protocols.data_parser_protocol import DataParserProtocol
-from athena.protocols.reporter_protocol import ReporterProtocol
-from athena.protocols.test_runner_protocol import TestRunnerProtocol
 from athena.services.config_parser_service import ConfigParserService
 from athena.services.plugin_service import PluginService
 from athena.services.report_service import ReportService
 from athena.services.test_service import TestService
 from athena.services.test_suite_service import TestSuiteService
+from athena.types import (
+    DataParserPluginResult,
+    ReporterPluginResult,
+    TestRunnerPluginResult,
+)
 
 app = typer.Typer()
 logging.basicConfig(level=logging.INFO)
@@ -55,15 +57,15 @@ def run(
             plugin_manager.register(plugin)
 
         # Create plugin services for different plugin types
-        data_parser_plugin_service = PluginService[Plugin[Dict[str, Any]]]()
+        data_parser_plugin_service = PluginService[DataParserPluginResult]()
         data_parser_plugin_service.register_plugins(
             plugin_manager.hook.activate_data_parser_plugin()
         )
-        test_runner_plugin_service = PluginService[Plugin[TestResult]]()
+        test_runner_plugin_service = PluginService[TestRunnerPluginResult]()
         test_runner_plugin_service.register_plugins(
             plugin_manager.hook.activate_test_plugin()
         )
-        reporter_plugin_service = PluginService[Plugin[None]]()
+        reporter_plugin_service = PluginService[ReporterPluginResult]()
         reporter_plugin_service.register_plugins(
             plugin_manager.hook.activate_reporter_plugin()
         )

@@ -19,4 +19,5 @@ PluginResultType = TypeVar(
     DataParserPluginResult,
     TestRunnerPluginResult,
     None.__class__,
+    default=None,
 )
