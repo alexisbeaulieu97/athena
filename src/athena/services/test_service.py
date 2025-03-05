@@ -36,7 +36,9 @@ class TestService:
             )
 
             test_result = self.plugin_manager.run_test(test_config_copy)
-            result_summary = TestResultSummary(test_config=test_config_copy, test_result=test_result)
+            result_summary = TestResultSummary(
+                config=test_config_copy, result=test_result
+            )
             results.append(result_summary)
 
         return results

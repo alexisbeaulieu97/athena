@@ -28,4 +28,6 @@ tests:
         threshold: 5 # Override the default disk threshold (90%)
 
 reports:
-  - name: "json"
+  - name: "rich_console"
+    parameters:
+      format: "table"

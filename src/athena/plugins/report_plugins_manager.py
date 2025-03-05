@@ -81,7 +81,7 @@ class ReportPluginsManager:
 
         try:
             reporter = self.get_reporter(reporter_config.name)
-            reporter.reporter.report(summary)
+            reporter.reporter.report(summary, **reporter_config.parameters)
         except KeyError:
             self.logger.error(f"Reporter '{reporter_config.name}' not found.")
             raise

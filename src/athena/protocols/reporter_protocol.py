@@ -1,3 +1,5 @@
+from typing import Any
+
 from typing_extensions import Protocol, runtime_checkable
 
 from athena.models.test_suite_summary import TestSuiteSummary
@@ -7,7 +9,7 @@ from athena.models.test_suite_summary import TestSuiteSummary
 class ReporterProtocol(Protocol):
     """Protocol for test result reporters."""
 
-    def report(self, summary: TestSuiteSummary) -> None:
+    def report(self, summary: TestSuiteSummary, **kwargs: Any) -> None:
         """Generate a report from test results.
 
         Args:

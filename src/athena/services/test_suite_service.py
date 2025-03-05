@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from athena.models.test_suite_summary import TestSuiteSummary
 from athena.models.test_result_summary import TestResultSummary
+from athena.models.test_suite_summary import TestSuiteSummary
 from athena.protocols.data_parser_plugins_manager_protocol import (
     DataParserPluginsManagerProtocol,
 )
@@ -38,7 +38,7 @@ class TestSuiteService:
             manager.load_builtin_plugins()
             manager.load_plugins()
 
-    def run_tests_from_config(self, config_file: Path) -> TestSuiteSummary:
+    def run_tests_from_config(self, config_file: Path) -> None:
         """Run all tests defined in the configuration file."""
         config = self.config_manager.parse_config(config_file)
         if not config:
@@ -47,12 +47,5 @@ class TestSuiteService:
         test_manager = TestService(self.test_plugins_manager, self.config_manager)
         results = test_manager.run_tests(config)
 
-        test_result_summaries = [
-            TestResultSummary(test_config=result.test_config, test_result=result.test_result)
-            for result in results
-        ]
-
         report_manager = ReportService(self.report_plugins_manager)
-        report_manager.generate_reports(config, test_result_summaries)
-
-        return TestSuiteSummary(results=test_result_summaries)
+        report_manager.generate_reports(config, TestSuiteSummary(results=results))

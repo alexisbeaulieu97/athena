@@ -35,22 +35,7 @@ def run(
             test_plugins_manager,
             report_plugins_manager,
         )
-        summary = test_service.run_tests_from_config(config_file)
-
-        # Show summary
-        passed = sum(1 for r in summary.results if r.status == "passed")
-        failed = sum(1 for r in summary.results if r.status == "failed")
-        skipped = sum(1 for r in summary.results if r.status == "skipped")
-
-        typer.echo("\nTest Summary:")
-        typer.echo(f"  Total: {len(summary.results)}")
-        typer.secho(
-            f"  Passed: {passed}", fg=typer.colors.GREEN if passed > 0 else None
-        )
-        typer.secho(f"  Failed: {failed}", fg=typer.colors.RED if failed > 0 else None)
-        typer.secho(
-            f"  Skipped: {skipped}", fg=typer.colors.YELLOW if skipped > 0 else None
-        )
+        test_service.run_tests_from_config(config_file)
     except Exception as e:
         logger.exception("Error running tests")
         typer.echo(f"Error: {str(e)}", err=True)

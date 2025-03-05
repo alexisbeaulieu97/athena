@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+from typing import Any
 
 from athena.models.plugin_metadata import PluginMetadata
 from athena.models.reporter_plugin import ReporterPlugin
@@ -22,7 +23,7 @@ def register_reporter_plugin() -> ReporterPlugin:
 
 
 class JSONReporter:
-    def report(self, summary: TestSuiteSummary) -> None:
+    def report(self, summary: TestSuiteSummary, **kwargs: Any) -> None:
         """Export test results as JSON file.
 
         Args:
