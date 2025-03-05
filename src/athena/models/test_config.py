@@ -9,5 +9,5 @@ class TestConfig(BaseModel):
     """Configuration for an individual test."""
 
     name: str
-    runner: str
+    plugin_identifier: str
     parameters: Dict[str, Any] = Field(default_factory=dict)

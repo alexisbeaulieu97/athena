@@ -4,21 +4,23 @@ import json
 from datetime import datetime
 from typing import Any
 
+from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
-from athena.models.reporter_plugin import ReporterPlugin
 from athena.models.test_suite_summary import TestSuiteSummary
 from athena.plugins import hookimpl
+from athena.protocols.reporter_protocol import ReporterProtocol
 
 
-@hookimpl(tryfirst=True)
-def register_reporter_plugin() -> ReporterPlugin:
+@hookimpl
+def activate_reporter_plugin() -> Plugin[ReporterProtocol]:
     """Register the JSON reporter plugin."""
-    return ReporterPlugin(
+    return Plugin(
         metadata=PluginMetadata(
             name="json",
             description="Export test results as JSON file",
         ),
-        reporter=JSONReporter(),
+        executor=JSONReporter(),
+        identifiers=("json",),
     )
 
 

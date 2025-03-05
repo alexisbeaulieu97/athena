@@ -5,7 +5,7 @@ from athena.models.reporter_config import ReporterConfig
 from athena.models.test_config import TestConfig
 
 
-class AthenaTestSuiteConfig(BaseModel):
+class TestSuiteConfig(BaseModel):
     """Model representing the configuration of a test suite."""
 
     parameters: Optional[dict[str, Any]]

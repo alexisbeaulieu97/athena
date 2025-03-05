@@ -7,4 +7,5 @@ from athena.models import BaseModel
 
 class ReporterConfig(BaseModel):
     name: str
+    plugin_identifier: str
     parameters: Dict[str, Any] = Field(default_factory=dict)

@@ -1,10 +1,12 @@
-from typing import List
+from typing import Any, Dict, List
 
-from athena.models.athena_test_suite_config import AthenaTestSuiteConfig
+from athena.models.plugin import Plugin
 from athena.models.test_config import TestConfig
 from athena.models.test_result_summary import TestResultSummary
-from athena.protocols.test_plugins_manager_protocol import TestPluginsManagerProtocol
-from athena.services.configuration_service import ConfigurationService
+from athena.models.test_suite_config import TestSuiteConfig
+from athena.protocols.data_parser_service_protocol import DataParserServiceProtocol
+from athena.protocols.plugin_service_protocol import PluginServiceProtocol
+from athena.protocols.test_runner_protocol import TestRunnerProtocol
 
 
 class TestService:
@@ -12,33 +14,51 @@ class TestService:
 
     def __init__(
         self,
-        plugin_manager: TestPluginsManagerProtocol,
-        config_manager: ConfigurationService,
+        plugin_service: PluginServiceProtocol[Plugin[TestRunnerProtocol]],
+        data_parser_service: DataParserServiceProtocol,
     ) -> None:
-        self.plugin_manager = plugin_manager
-        self.config_manager = config_manager
+        self.plugin_service = plugin_service
+        self.data_parser_service = data_parser_service
 
-    def run_tests(self, config: AthenaTestSuiteConfig) -> List[TestResultSummary]:
+    def run_tests(self, config: TestSuiteConfig) -> List[TestResultSummary]:
         """Execute tests based on the configuration."""
         results = []
 
         for test_config in config.tests:
             # Merge global parameters with test-specific ones
-            merged_params = self.config_manager.merge_parameters(
+            merged_params = self.merge_parameters(
                 config.parameters or {}, test_config.parameters or {}
             )
 
             # Create a new test config to avoid modifying the original
             test_config_copy = TestConfig(
                 name=test_config.name,
-                runner=test_config.runner,
+                plugin_identifier=test_config.plugin_identifier,
                 parameters=merged_params,
             )
 
-            test_result = self.plugin_manager.run_test(test_config_copy)
+            plugin = self.plugin_service.get_plugin(test_config.plugin_identifier)
+            test_result = plugin.executor.run(**test_config_copy.parameters)
             result_summary = TestResultSummary(
                 config=test_config_copy, result=test_result
             )
             results.append(result_summary)
 
         return results
+
+    def merge_parameters(
+        self,
+        global_params: Dict[str, Any],
+        test_params: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Merge global and test-specific parameters with proper precedence."""
+        if not global_params and not test_params:
+            return {}
+
+        merged_params = {}
+        if global_params:
+            merged_params = global_params.copy()
+        if test_params:
+            merged_params.update(test_params)
+
+        return merged_params

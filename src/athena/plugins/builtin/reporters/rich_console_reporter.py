@@ -9,11 +9,12 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
-from athena.models.reporter_plugin import ReporterPlugin
 from athena.models.test_result import ResultType
 from athena.models.test_suite_summary import TestSuiteSummary
 from athena.plugins import hookimpl
+from athena.protocols.reporter_protocol import ReporterProtocol
 
 
 class OutputFormat(str, Enum):
@@ -23,15 +24,16 @@ class OutputFormat(str, Enum):
     LIST = "list"  # List format with one test per item
 
 
-@hookimpl(tryfirst=True)
-def register_reporter_plugin() -> ReporterPlugin:
+@hookimpl
+def activate_reporter_plugin() -> Plugin[ReporterProtocol]:
     """Register the Rich Console reporter plugin."""
-    return ReporterPlugin(
+    return Plugin(
         metadata=PluginMetadata(
             name="rich_console",
             description="Display test results in terminal with rich formatting",
         ),
-        reporter=RichConsoleReporter(),
+        executor=RichConsoleReporter(),
+        identifiers=("rich_console",),
     )
 
 
@@ -81,7 +83,9 @@ class RichConsoleReporter:
             status = Text(result.result.type.value.upper(), style=status_style)
             message = result.result.message or ""
 
-            table.add_row(status, result.config.name, message, result.config.runner)
+            table.add_row(
+                status, result.config.name, message, result.config.plugin_identifier
+            )
 
         self.console.print(table)
         self.console.print()
@@ -122,7 +126,7 @@ class RichConsoleReporter:
                         break
 
             # Show runner
-            self.console.print(f"  Runner: {result.config.runner}")
+            self.console.print(f"  Runner: {result.config.plugin_identifier}")
 
             # Add separator between tests (except after the last one)
             if idx < len(summary.results) - 1:

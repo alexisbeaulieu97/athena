@@ -2,21 +2,23 @@ from typing import Any
 
 import psutil
 
+from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.models.test_details import TestDetails
-from athena.models.test_plugin import TestPlugin
 from athena.models.test_result import TestResult
 from athena.plugins import hookimpl
+from athena.protocols.test_runner_protocol import TestRunnerProtocol
 
 
-@hookimpl(tryfirst=True)
-def register_test_plugin() -> TestPlugin:
-    return TestPlugin(
+@hookimpl
+def activate_test_plugin() -> Plugin[TestRunnerProtocol]:
+    return Plugin(
         metadata=PluginMetadata(
             name="system",
             description="A plugin to collect system information",
         ),
-        runner=SystemTestRunner(),
+        executor=SystemTestRunner(),
+        identifiers=("system",),
     )
 
 

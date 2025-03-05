@@ -10,24 +10,25 @@ parameters:
 # List of tests to run with their specific parameters
 tests:
   - name: "Network collection test"
-    runner: "system"
+    plugin_identifier: "system"
     parameters:
-      collect_network: true # Enable network information collection
+      collect_network: true
 
   - name: "Memory test"
-    runner: "system"
+    plugin_identifier: "system"
     parameters:
       memory:
-        threshold: 10 # Override the default memory threshold (80%)
+        threshold: 10
 
   - name: "Disk test"
-    runner: "system"
+    plugin_identifier: "system"
     parameters:
       disk:
         path: "/tmp"
-        threshold: 5 # Override the default disk threshold (90%)
+        threshold: 5
 
 reports:
   - name: "rich_console"
+    plugin_identifier: "rich_console"
     parameters:
       format: "table"

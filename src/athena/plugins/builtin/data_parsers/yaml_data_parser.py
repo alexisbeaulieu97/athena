@@ -2,21 +2,22 @@ from typing import Any
 
 import yaml
 
-from athena.models.data_parser_plugin import DataParserPlugin
+from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.plugins import hookimpl
+from athena.protocols.data_parser_protocol import DataParserProtocol
 
 
-@hookimpl(tryfirst=True)
-def register_data_parser_plugin() -> DataParserPlugin:
+@hookimpl
+def activate_data_parser_plugin() -> Plugin[DataParserProtocol]:
     """Register the YAML data parser plugin."""
-    return DataParserPlugin(
+    return Plugin(
         metadata=PluginMetadata(
             name="yaml",
             description="Parse YAML formatted data",
         ),
-        parser=YAMLDataParser(),
-        supported_formats=("yaml", "yml"),
+        executor=YAMLDataParser(),
+        identifiers=("yaml", "yml"),
     )
 
 
