@@ -1,10 +1,12 @@
 import logging
 from pathlib import Path
+from typing import Any, Dict
 
 import pluggy
 import typer
 
 from athena.models.plugin import Plugin
+from athena.models.test_result import TestResult
 from athena.plugins.builtin import (
     BUILTIN_PARSER_PLUGINS,
     BUILTIN_REPORTER_PLUGINS,
@@ -53,15 +55,15 @@ def run(
             plugin_manager.register(plugin)
 
         # Create plugin services for different plugin types
-        data_parser_plugin_service = PluginService[Plugin[DataParserProtocol]]()
+        data_parser_plugin_service = PluginService[Plugin[Dict[str, Any]]]()
         data_parser_plugin_service.register_plugins(
             plugin_manager.hook.activate_data_parser_plugin()
         )
-        test_runner_plugin_service = PluginService[Plugin[TestRunnerProtocol]]()
+        test_runner_plugin_service = PluginService[Plugin[TestResult]]()
         test_runner_plugin_service.register_plugins(
             plugin_manager.hook.activate_test_plugin()
         )
-        reporter_plugin_service = PluginService[Plugin[ReporterProtocol]]()
+        reporter_plugin_service = PluginService[Plugin[None]]()
         reporter_plugin_service.register_plugins(
             plugin_manager.hook.activate_reporter_plugin()
         )

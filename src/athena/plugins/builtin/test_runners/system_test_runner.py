@@ -2,54 +2,66 @@ from typing import Any
 
 import psutil
 
+from athena.models import BaseModel
 from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.models.test_details import TestDetails
 from athena.models.test_result import TestResult
 from athena.plugins import hookimpl
-from athena.protocols.test_runner_protocol import TestRunnerProtocol
+from athena.types import TestRunnerPluginResult
+
+
+class SystemTestRunnerParameters(BaseModel):
+    cpu: dict[str, Any] = {}
+    memory: dict[str, Any] = {}
+    disk: dict[str, Any] = {}
 
 
 @hookimpl
-def activate_test_plugin() -> Plugin[TestRunnerProtocol]:
+def activate_test_plugin() -> Plugin[
+    TestRunnerPluginResult,
+    SystemTestRunnerParameters,
+]:
     return Plugin(
         metadata=PluginMetadata(
             name="system",
             description="A plugin to collect system information",
         ),
         executor=SystemTestRunner(),
-        identifiers=("system",),
+        parameters_model=SystemTestRunnerParameters,
+        identifiers={"system"},
     )
 
 
 class SystemTestRunner:
-    def run(self, **kwargs: Any) -> TestResult:
+    def __call__(
+        self, parameters: SystemTestRunnerParameters
+    ) -> TestRunnerPluginResult:
         details: dict[str, TestDetails] = {}
-        if "cpu" in kwargs:
+        if parameters.cpu:
             details["cpu"] = TestDetails(
-                expected=kwargs.get("cpu", {}).get("threshold", 80),
+                expected=parameters.cpu.get("threshold", 80),
                 actual=psutil.cpu_percent(interval=1),
                 success=(
-                    kwargs.get("cpu", {}).get("threshold", 80)
-                    > psutil.cpu_percent(interval=1)
+                    parameters.cpu.get("threshold", 80) > psutil.cpu_percent(interval=1)
                 ),
             )
-        if "memory" in kwargs:
+        if parameters.memory:
             details["memory"] = TestDetails(
-                expected=kwargs.get("memory", {}).get("threshold", 80),
+                expected=parameters.memory.get("threshold", 80),
                 actual=psutil.virtual_memory().percent,
                 success=(
-                    kwargs.get("memory", {}).get("threshold", 80)
+                    parameters.memory.get("threshold", 80)
                     > psutil.virtual_memory().percent
                 ),
             )
-        if "disk" in kwargs:
+        if parameters.disk:
             details["disk"] = TestDetails(
-                expected=kwargs.get("disk", {}).get("threshold", 80),
-                actual=psutil.disk_usage(kwargs["disk"]["path"]).percent,
+                expected=parameters.disk.get("threshold", 80),
+                actual=psutil.disk_usage(parameters.disk["path"]).percent,
                 success=(
-                    kwargs.get("disk", {}).get("threshold", 80)
-                    > psutil.disk_usage(kwargs["disk"]["path"]).percent
+                    parameters.disk.get("threshold", 80)
+                    > psutil.disk_usage(parameters.disk["path"]).percent
                 ),
             )
 

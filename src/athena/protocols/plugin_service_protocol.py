@@ -1,10 +1,10 @@
-from typing import Protocol, TypeVar, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-T = TypeVar("T", covariant=True)
+from athena.models.plugin import Plugin
 
 
 @runtime_checkable
-class PluginServiceProtocol(Protocol[T]):
-    def get_plugin(self, plugin_identifier: str) -> T:
+class PluginServiceProtocol(Protocol):
+    def get_plugin(self, plugin_identifier: str) -> Plugin:
         """Get a plugin by its unique idenfitier."""
         ...

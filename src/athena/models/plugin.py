@@ -1,12 +1,12 @@
-from typing import Generic, Iterable, TypeVar
+from typing import Callable, Generic, Set, Type
 
 from athena.models import BaseModel
 from athena.models.plugin_metadata import PluginMetadata
+from athena.types import PluginParametersType, PluginResultType
 
-ExecutorType = TypeVar("ExecutorType", covariant=True)
 
-
-class Plugin(BaseModel, Generic[ExecutorType]):
+class Plugin(BaseModel, Generic[PluginResultType, PluginParametersType]):
     metadata: PluginMetadata
-    executor: ExecutorType
-    identifiers: Iterable[str]
+    executor: Callable[[PluginParametersType], PluginResultType]
+    parameters_model: Type[PluginParametersType]
+    identifiers: Set[str]

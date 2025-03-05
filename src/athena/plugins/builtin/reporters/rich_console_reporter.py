@@ -1,7 +1,6 @@
 """Rich Console reporter plugin for Athena test reports."""
 
 from enum import Enum
-from typing import Any
 
 from rich import box
 from rich.console import Console
@@ -9,12 +8,13 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from athena.models import BaseModel
 from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.models.test_result import ResultType
 from athena.models.test_suite_summary import TestSuiteSummary
 from athena.plugins import hookimpl
-from athena.protocols.reporter_protocol import ReporterProtocol
+from athena.types import ReporterPluginResult
 
 
 class OutputFormat(str, Enum):
@@ -24,8 +24,18 @@ class OutputFormat(str, Enum):
     LIST = "list"  # List format with one test per item
 
 
+class RichConsoleReporterParameters(BaseModel):
+    format: OutputFormat = OutputFormat.TABLE
+    summary: TestSuiteSummary
+    show_details: bool = False
+    show_summary: bool = True
+
+
 @hookimpl
-def activate_reporter_plugin() -> Plugin[ReporterProtocol]:
+def activate_reporter_plugin() -> Plugin[
+    ReporterPluginResult,
+    RichConsoleReporterParameters,
+]:
     """Register the Rich Console reporter plugin."""
     return Plugin(
         metadata=PluginMetadata(
@@ -33,7 +43,8 @@ def activate_reporter_plugin() -> Plugin[ReporterProtocol]:
             description="Display test results in terminal with rich formatting",
         ),
         executor=RichConsoleReporter(),
-        identifiers=("rich_console",),
+        parameters_model=RichConsoleReporterParameters,
+        identifiers={"rich_console"},
     )
 
 
@@ -41,30 +52,31 @@ class RichConsoleReporter:
     def __init__(self) -> None:
         self.console = Console()
 
-    def report(self, summary: TestSuiteSummary, **kwargs: Any) -> None:
+    def __call__(
+        self,
+        parameters: RichConsoleReporterParameters,
+    ) -> ReporterPluginResult:
         """Display test results using Rich formatting.
 
         Args:
             summary: Test execution summary containing results
             **kwargs: Additional parameters passed from the reporter config
         """
-        # Process format setting
-        format_name = kwargs.get("format", "table")
         try:
-            output_format = OutputFormat(format_name)
+            output_format = OutputFormat(parameters.format)
         except ValueError:
-            print(f"Warning: Unknown format '{format_name}', using 'table' instead")
+            print(
+                f"Warning: Unknown format '{parameters.format}', using 'table' instead"
+            )
             output_format = OutputFormat.TABLE
 
-        show_details = kwargs.get("show_details", False)
-
         if output_format == OutputFormat.TABLE:
-            self._table_format(summary)
+            self._table_format(parameters.summary)
         else:
-            self._list_format(summary, show_details)
+            self._list_format(parameters.summary, parameters.show_details)
 
-        if kwargs.get("show_summary", True):
-            self._print_summary(summary)
+        if parameters.show_summary:
+            self._print_summary(parameters.summary)
 
     def _table_format(self, summary: TestSuiteSummary) -> None:
         """Print results in a clean table format."""

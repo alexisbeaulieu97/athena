@@ -2,17 +2,24 @@
 
 import json
 from datetime import datetime
-from typing import Any
 
+from athena.models import BaseModel
 from athena.models.plugin import Plugin
 from athena.models.plugin_metadata import PluginMetadata
 from athena.models.test_suite_summary import TestSuiteSummary
 from athena.plugins import hookimpl
-from athena.protocols.reporter_protocol import ReporterProtocol
+from athena.types import ReporterPluginResult
+
+
+class JSONReporterParameters(BaseModel):
+    summary: TestSuiteSummary
 
 
 @hookimpl
-def activate_reporter_plugin() -> Plugin[ReporterProtocol]:
+def activate_reporter_plugin() -> Plugin[
+    ReporterPluginResult,
+    JSONReporterParameters,
+]:
     """Register the JSON reporter plugin."""
     return Plugin(
         metadata=PluginMetadata(
@@ -20,12 +27,13 @@ def activate_reporter_plugin() -> Plugin[ReporterProtocol]:
             description="Export test results as JSON file",
         ),
         executor=JSONReporter(),
-        identifiers=("json",),
+        parameters_model=JSONReporterParameters,
+        identifiers={"json"},
     )
 
 
 class JSONReporter:
-    def report(self, summary: TestSuiteSummary, **kwargs: Any) -> None:
+    def __call__(self, parameters: JSONReporterParameters) -> ReporterPluginResult:
         """Export test results as JSON file.
 
         Args:
@@ -37,6 +45,6 @@ class JSONReporter:
 
         # Convert the summary to JSON with custom encoder
         with open(filename, "w") as f:
-            json.dump(summary.model_dump(), f, indent=2)
+            json.dump(parameters.summary.model_dump(), f, indent=2)
 
         print(f"Report exported to: {filename}")

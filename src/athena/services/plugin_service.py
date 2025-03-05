@@ -1,16 +1,14 @@
-from typing import Dict, List, TypeVar
+from typing import Dict, List
 
 from athena.models.plugin import Plugin
 from athena.protocols.plugin_service_protocol import PluginServiceProtocol
 
-PluginType = TypeVar("PluginType", bound=Plugin)
 
-
-class PluginService(PluginServiceProtocol[PluginType]):
+class PluginService(PluginServiceProtocol):
     def __init__(self) -> None:
-        self.plugin_registry: Dict[str, PluginType] = {}
+        self.plugin_registry: Dict[str, Plugin] = {}
 
-    def register_plugin(self, plugin: PluginType) -> None:
+    def register_plugin(self, plugin: Plugin) -> None:
         """Register a plugin with the service.
 
         Args:
@@ -26,7 +24,7 @@ class PluginService(PluginServiceProtocol[PluginType]):
                 )
             self.plugin_registry[identifier] = plugin
 
-    def register_plugins(self, plugins: List[PluginType]) -> None:
+    def register_plugins(self, plugins: List[Plugin]) -> None:
         """Register multiple plugins with the service.
 
         Args:
@@ -38,7 +36,7 @@ class PluginService(PluginServiceProtocol[PluginType]):
         for plugin in plugins:
             self.register_plugin(plugin)
 
-    def get_plugin(self, plugin_identifier: str) -> PluginType:
+    def get_plugin(self, plugin_identifier: str) -> Plugin:
         """Get a plugin by its unique identifier.
 
         Args:

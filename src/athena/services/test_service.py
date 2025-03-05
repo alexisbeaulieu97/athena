@@ -2,11 +2,11 @@ from typing import Any, Dict, List
 
 from athena.models.plugin import Plugin
 from athena.models.test_config import TestConfig
+from athena.models.test_result import TestResult
 from athena.models.test_result_summary import TestResultSummary
 from athena.models.test_suite_config import TestSuiteConfig
 from athena.protocols.data_parser_service_protocol import DataParserServiceProtocol
 from athena.protocols.plugin_service_protocol import PluginServiceProtocol
-from athena.protocols.test_runner_protocol import TestRunnerProtocol
 
 
 class TestService:
@@ -14,7 +14,7 @@ class TestService:
 
     def __init__(
         self,
-        plugin_service: PluginServiceProtocol[Plugin[TestRunnerProtocol]],
+        plugin_service: PluginServiceProtocol[Plugin[TestResult]],
         data_parser_service: DataParserServiceProtocol,
     ) -> None:
         self.plugin_service = plugin_service
@@ -38,7 +38,10 @@ class TestService:
             )
 
             plugin = self.plugin_service.get_plugin(test_config.plugin_identifier)
-            test_result = plugin.executor.run(**test_config_copy.parameters)
+            test_result = plugin.executor(
+                plugin.parameters_model(**test_config_copy.parameters)
+            )
+            # test_result = plugin.executor_object.run(**test_config_copy.parameters)
             result_summary = TestResultSummary(
                 config=test_config_copy, result=test_result
             )
