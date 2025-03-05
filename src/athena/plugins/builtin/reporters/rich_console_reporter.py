@@ -1,6 +1,5 @@
 """Rich Console reporter plugin for Athena test reports."""
 
-from email import header
 from enum import Enum
 from typing import Any
 
