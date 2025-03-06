@@ -69,8 +69,8 @@ def run(
         )
 
         # Initialize core services
-        data_parser_service = ConfigParserService()
-        test_service = TestService(test_runner_plugin_service, data_parser_service)
+        data_parser_service = ConfigParserService(data_parser_plugin_service)
+        test_service = TestService(test_runner_plugin_service)
         report_service = ReportService(reporter_plugin_service)
 
         # Create the main test suite service with the required service protocols
@@ -78,7 +78,6 @@ def run(
             data_parser_service,
             test_service,
             report_service,
-            data_parser_plugin_service,
         )
 
         # Run the tests

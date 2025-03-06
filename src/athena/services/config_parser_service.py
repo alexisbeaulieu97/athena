@@ -9,14 +9,18 @@ from athena.types import DataParserPluginResult
 class ConfigParserService(ConfigParserServiceProtocol):
     """Component responsible for configuration parsing and parameter management."""
 
+    def __init__(
+        self, plugin_service: PluginServiceProtocol[DataParserPluginResult, BaseModel]
+    ) -> None:
+        self.plugin_service = plugin_service
+
     def parse(
         self,
         config: Path,
-        plugin_service: PluginServiceProtocol[DataParserPluginResult, BaseModel],
     ) -> DataParserPluginResult:
         config_raw = config.read_text()
         format_ext = config.suffix.lstrip(".")
-        plugin = plugin_service.get_plugin(format_ext)
+        plugin = self.plugin_service.get_plugin(format_ext)
         return plugin.executor(
             plugin.parameters_model(
                 **{
