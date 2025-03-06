@@ -1,12 +1,10 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict
 
 import pluggy
 import typer
 
-from athena.models.plugin import Plugin
-from athena.models.test_result import TestResult
+from athena.models import BaseModel
 from athena.plugins.builtin import (
     BUILTIN_PARSER_PLUGINS,
     BUILTIN_REPORTER_PLUGINS,
@@ -57,21 +55,21 @@ def run(
             plugin_manager.register(plugin)
 
         # Create plugin services for different plugin types
-        data_parser_plugin_service = PluginService[DataParserPluginResult]()
+        data_parser_plugin_service = PluginService[DataParserPluginResult, BaseModel]()
         data_parser_plugin_service.register_plugins(
             plugin_manager.hook.activate_data_parser_plugin()
         )
-        test_runner_plugin_service = PluginService[TestRunnerPluginResult]()
+        test_runner_plugin_service = PluginService[TestRunnerPluginResult, BaseModel]()
         test_runner_plugin_service.register_plugins(
             plugin_manager.hook.activate_test_plugin()
         )
-        reporter_plugin_service = PluginService[ReporterPluginResult]()
+        reporter_plugin_service = PluginService[ReporterPluginResult, BaseModel]()
         reporter_plugin_service.register_plugins(
             plugin_manager.hook.activate_reporter_plugin()
         )
 
         # Initialize core services
-        data_parser_service = ConfigParserService(data_parser_plugin_service)
+        data_parser_service = ConfigParserService()
         test_service = TestService(test_runner_plugin_service, data_parser_service)
         report_service = ReportService(reporter_plugin_service)
 
@@ -80,6 +78,7 @@ def run(
             data_parser_service,
             test_service,
             report_service,
+            data_parser_plugin_service,
         )
 
         # Run the tests

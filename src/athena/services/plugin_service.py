@@ -1,17 +1,15 @@
-from typing import Dict, Generic, List
+from typing import Dict, List
 
 from athena.models.plugin import Plugin
 from athena.protocols.plugin_service_protocol import PluginServiceProtocol
 from athena.types import PluginParametersType, PluginResultType
 
 
-class PluginService(
-    PluginServiceProtocol,
-    Generic[PluginResultType, PluginParametersType],
-):
+class PluginService(PluginServiceProtocol[PluginResultType, PluginParametersType]):
     def __init__(self) -> None:
         self.plugin_registry: Dict[
-            str, Plugin[PluginResultType, PluginParametersType]
+            str,
+            Plugin[PluginResultType, PluginParametersType],
         ] = {}
 
     def register_plugin(

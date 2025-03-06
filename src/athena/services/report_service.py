@@ -1,7 +1,8 @@
-from athena.models.plugin import Plugin
+from athena.models import BaseModel
 from athena.models.test_suite_config import TestSuiteConfig
 from athena.models.test_suite_summary import TestSuiteSummary
 from athena.protocols.plugin_service_protocol import PluginServiceProtocol
+from athena.types import ReporterPluginResult
 
 
 class ReportService:
@@ -9,7 +10,7 @@ class ReportService:
 
     def __init__(
         self,
-        plugin_service: PluginServiceProtocol[Plugin[None]],
+        plugin_service: PluginServiceProtocol[ReporterPluginResult, BaseModel],
     ) -> None:
         self.plugin_service = plugin_service
 

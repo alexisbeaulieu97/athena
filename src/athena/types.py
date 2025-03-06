@@ -11,7 +11,6 @@ ReporterPluginResult = Optional[None]
 PluginParametersType = TypeVar(
     "PluginParametersType",
     bound=BaseModel,
-    default=BaseModel,
 )
 
 PluginResultType = TypeVar(
@@ -19,5 +18,4 @@ PluginResultType = TypeVar(
     DataParserPluginResult,
     TestRunnerPluginResult,
     None.__class__,
-    default=None,
 )

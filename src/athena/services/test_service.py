@@ -1,28 +1,29 @@
 from typing import Any, Dict, List
 
-from athena.models.plugin import Plugin
+from athena.models import BaseModel
 from athena.models.test_config import TestConfig
-from athena.models.test_result import TestResult
 from athena.models.test_result_summary import TestResultSummary
 from athena.models.test_suite_config import TestSuiteConfig
-from athena.protocols.data_parser_service_protocol import DataParserServiceProtocol
+from athena.protocols.config_parser_service_protocol import ConfigParserServiceProtocol
 from athena.protocols.plugin_service_protocol import PluginServiceProtocol
+from athena.protocols.test_service_protocol import TestServiceProtocol
+from athena.types import TestRunnerPluginResult
 
 
-class TestService:
+class TestService(TestServiceProtocol):
     """Component responsible for executing tests."""
 
     def __init__(
         self,
-        plugin_service: PluginServiceProtocol[Plugin[TestResult]],
-        data_parser_service: DataParserServiceProtocol,
+        plugin_service: PluginServiceProtocol[TestRunnerPluginResult, BaseModel],
+        data_parser_service: ConfigParserServiceProtocol,
     ) -> None:
         self.plugin_service = plugin_service
         self.data_parser_service = data_parser_service
 
     def run_tests(self, config: TestSuiteConfig) -> List[TestResultSummary]:
         """Execute tests based on the configuration."""
-        results = []
+        results: List[TestResultSummary] = []
 
         for test_config in config.tests:
             # Merge global parameters with test-specific ones
@@ -41,7 +42,6 @@ class TestService:
             test_result = plugin.executor(
                 plugin.parameters_model(**test_config_copy.parameters)
             )
-            # test_result = plugin.executor_object.run(**test_config_copy.parameters)
             result_summary = TestResultSummary(
                 config=test_config_copy, result=test_result
             )
