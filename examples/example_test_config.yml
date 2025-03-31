@@ -31,4 +31,4 @@ reports:
   - name: "rich_console"
     plugin_identifier: "rich_console"
     parameters:
-      format: "table"
+      format: "list"

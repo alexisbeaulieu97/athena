@@ -24,7 +24,7 @@ class ReportService:
                 plugin.parameters_model(
                     **{
                         "summary": summary,
-                        **config.model_dump(),
+                        **report.parameters,
                     },
                 )
             )
